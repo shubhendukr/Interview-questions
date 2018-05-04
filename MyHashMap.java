@@ -1,93 +1,198 @@
-public class MyHashMap {
-      // for better re-sizing is taken as 2^4
-      private static final int SIZE = 16;
+public class HashMap<K, V> {
 
-      private Entry table[] = new Entry[SIZE];
+	private Entry<K, V>[] entryTable;
+	private int initialCapacity = 16;
 
-      /**
-       * To store the Map data in key and value pair.
-       * Used linked list approach to avoid the collisions
-       */
-      class Entry {
-            final String key;
-            String value;
-            Entry next;
+	@SuppressWarnings("unchecked")
+	public HashMap() {
+		entryTable = new Entry[initialCapacity];
+	}
 
-            Entry(String k, String v) {
-                  key = k;
-                  value = v;
-            }
+	@SuppressWarnings("unchecked")
+	public HashMap(int capacity) {
+		initialCapacity = capacity;
+		entryTable = new Entry[initialCapacity];
+	}
 
-            public String getValue() {
-                  return value;
-            }
+	public void put(K key, V value) {
+		if (key == null) {
+			throw new RuntimeException("null key is not allowed");
+		}
+		// hash value of the key
+		int hashValue = hashValue(key);
+		// create the entry
+		Entry<K, V> entry = new Entry<K, V>(key, value, null);
 
-            public void setValue(String value) {
-                  this.value = value;
-            }
+		// if no entry found at the hash value index of the entry table then put
+		// the value
+		if (entryTable[hashValue] == null) {
+			entryTable[hashValue] = entry;
+		} else {// if found then put the value in a linked list
+			Entry<K, V> previous = null;
+			Entry<K, V> current = entryTable[hashValue];
+			while (current != null) {
+				if (current.k.equals(key)) {
+					if (previous == null) {
+						entry.next = current.next;
+						entryTable[hashValue] = entry;
+					} else {
+						entry.next = current.next;
+						previous.next = entry;
+					}
+				}
+				previous = current;
+				current = current.next;
+			}
+			previous.next = entry;
+		}
 
-            public String getKey() {
-                  return key;
-            }
-      }
+	}
 
-      /**
-       * Returns the entry mapped to key in the HashMap.
-       */
-      public Entry get(String k) {
-            int hash = k.hashCode() & (SIZE-1);   // int hash = k.hashCode() % SIZE
-            Entry e = table[hash];
+	public V get(K key) {
+		if (key == null) {
+			return null;
+		}
+		// hash value of the key
+		int hashValue = hashValue(key);
+		if (entryTable[hashValue] == null) {
+			return null;
+		} else {
+			Entry<K, V> temp = entryTable[hashValue];
+			while (temp != null) {
+				if (temp.k.equals(key)) {
+					return temp.v;
+				}
+				temp = temp.next;
+			}
+		}
+		return null;
+	}
 
-            // Bucket is identified by hashCode and traversed the bucket
-            // till element is not found.
-            while(e != null) {
-                  if(e.key.equals(k)) {
-                        return e;
-                  }
-                  e = e.next;
-            }
-            return null;
-      }
+	public boolean remove(K key) {
+		if (key == null) {
+			return false;
+		}
+		// hash value of the key
+		int hashValue = hashValue(key);
+		if (entryTable[hashValue] == null) {
+			return false;
+		} else {
+			Entry<K, V> previous = null;
+			Entry<K, V> current = entryTable[hashValue];
+			while (current != null) {
+				if (current.k.equals(key)) {
+					if (previous == null) {
+						entryTable[hashValue] = entryTable[hashValue].next;
+						return true;
+					} else {
+						previous.next = current.next;
+						return true;
+					}
+				}
+				previous = current;
+				current = current.next;
+			}
+			return false;
+		}
+	}
 
-      /**
-       * If the map previously contained a mapping for the key, the old
-       * value is replaced.
-       */
-      public void put(String k, String v) {
-            int hash = k.hashCode() % SIZE;
-            Entry e = table[hash];
+	public boolean containsKey(K key) {
+		int hashValue = hashValue(key);
+		if (entryTable[hashValue] == null) {
+			return false;
+		} else {
+			Entry<K, V> current = entryTable[hashValue];
+			while (current != null) {
+				if (current.k.equals(key)) {
+					return true;
+				}
+				current = current.next;
+			}
+		}
+		return false;
+	}
 
-            if(e != null) {
-                  // If we will insert duplicate key-value pair,
-                  // Old value will be replaced by new one.
-                  if(e.key.equals(k)) {
-                        e.value = v;
-                  } else {
-                        // Collision: insert new element at the end of list
-                        // in the same bucket
-                        while(e.next != null) {
-                              e = e.next;
-                        }
-                        Entry entryInOldBucket = new Entry(k, v);
-                        e.next = entryInOldBucket;
-                  }
-            } else {
-                  // create new bucket for new element in the map.
-                  Entry entryInNewBucket = new Entry(k, v);
-                  table[hash] = entryInNewBucket;
-            }
-      }
+	public int size() {
+		int count = 0;
+		for (int i = 0; i < entryTable.length; i++) {
+			if (entryTable[i] != null) {
+				int nodeCount = 0;
+				for (Entry<K, V> e = entryTable[i]; e.next != null; e = e.next) {
+					nodeCount++;
+				}
+				count += nodeCount;
+				count++;// consider also vertical count
+			}
+		}
+		return count;
+	}
 
-      public static void main(String[] args) {
-            MyHashMap myHashMap = new MyHashMap();
+	private int hashValue(K key) {
+		return Math.abs(key.hashCode()) % initialCapacity;
+	}
 
-            myHashMap.put("Awadh", "SSE");
-            myHashMap.put("Rahul", "SSE");
-            myHashMap.put("Sattu", "SE");
-            myHashMap.put("Gaurav", "SE");
-            myHashMap.put("Awadh", "SE");
+	private static class Entry<K, V> {
+		private K k;
+		private V v;
+		private Entry<K, V> next;
 
-            Entry e = myHashMap.get("Awadh");
-            System.out.println(""+e.getValue());
-      }
+		public Entry(K k, V v, Entry<K, V> next) {
+			this.k = k;
+			this.v = v;
+			this.next = next;
+		}
+
+	}
+
+	public static void main(String[] args) {
+		HashMap<Integer, String> map = new HashMap<>(3);
+		map.put(1, "Hello");
+		map.put(2, "World");
+
+		System.out.println("Size: " + map.size());
+
+		String hello = map.get(1);
+		String world = map.get(2);
+
+		System.out.println(hello + " " + world);
+
+		System.out.println("Contains Key 1: " + map.containsKey(1));
+		System.out.println("Contains Key 2: " + map.containsKey(2));
+		System.out.println("Contains Key 3: " + map.containsKey(3));
+
+		map.put(3, "Dummy");
+
+		System.out.println("Contains Key 3: " + map.containsKey(3));
+		System.out.println("Size: " + map.size());
+
+		map.remove(3);
+
+		System.out.println("Contains Key 3: " + map.containsKey(3));
+		System.out.println("Size: " + map.size());
+
+		HashMap<String, String> map2 = new HashMap<>();
+		map2.put("1", "Hello");
+		map2.put("2", "World");
+		map2.put("3", "Hello");
+		map2.put("4", "World");
+		map2.put("5", "Hello");
+		map2.put("6", "World");
+		map2.put("7", "Hello");
+		map2.put("8", "World");
+		map2.put("9", "Hello");
+		map2.put("10", "World");
+		map2.put("11", "Hello");
+		map2.put("12", "World");
+		map2.put("13", "Hello");
+		map2.put("14", "World");
+		map2.put("15", "Hello");
+		map2.put("16", "World");
+
+		System.out.println("map2 size: " + map2.size());
+		System.out.println("Get Key 1: " + map2.get("1"));
+		System.out.println("Get Key 11: " + map2.get("11"));
+		System.out.println("Get Key 6: " + map2.get("6"));
+		System.out.println("Get Key 16: " + map2.get("16"));
+	}
+
 }
