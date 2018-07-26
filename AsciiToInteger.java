@@ -7,33 +7,45 @@ Implement atoi to convert a string to an integer.
 import java.util.Scanner;
 
 public class AsciiToInteger {
-    static int atoi(String str) {
-        if (str == null) 
-            return 0;
-
-        int i = 0;
-        boolean sign = true;
-        str = str.trim();
-        int n = str.length();
-        if (i < n && (str.charAt(0) == '+' || str.charAt(0) == '-')) {
-            if (str.charAt(0) == '+') 
-                sign = true;
-            else 
-                sign = false;
-            ++i;
-        }
-        int res = 0;
-        while (i < n && Character.isDigit(str.charAt(i))) {
-            if(res > Integer.MAX_VALUE / 10 || 
-                (res == Integer.MAX_VALUE / 10 && str.charAt(i) - '0' > Integer.MAX_VALUE % 10)){
-                    return sign ? Integer.MAX_VALUE : Integer.MIN_VALUE ;
-            }
-            res = res * 10 + str.charAt(i) - 48;
-            ++i;
-        }
-        return sign ? res : -res;
-    }
-
+    public static int atoi(String str) {
+		if (str == null || str.length() < 1)
+			return 0;
+	 
+		// trim white spaces
+		str = str.trim();
+	 
+		char flag = '+';
+	 
+		// check negative or positive
+		int i = 0;
+		if (str.charAt(0) == '-') {
+			flag = '-';
+			i++;
+		} else if (str.charAt(0) == '+') {
+			i++;
+		}
+		// use double to store result
+		int result = 0;
+	 
+		// calculate value
+		while (str.length() > i && str.charAt(i) >= '0' && str.charAt(i) <= '9') {
+			result = result * 10 + (str.charAt(i) - '0');
+			i++;
+		}
+	 
+		if (flag == '-')
+			result = -result;
+	 
+		// handle max and min
+		if (result > Integer.MAX_VALUE)
+			return Integer.MAX_VALUE;
+	 
+		if (result < Integer.MIN_VALUE)
+			return Integer.MIN_VALUE;
+	 
+		return (int) result;
+	}
+    
     public static void main(String[] args){
         Scanner sc = new Scanner(System.in);
         String str = sc.next();
