@@ -28,7 +28,6 @@ public class CompressString {
             count = count + 1;
          } else {
             compressed = compressed + ch;
-            System.out.println(compressed);
             if(count != 1){
                compressed = compressed + count;
             }
