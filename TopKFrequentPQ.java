@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 
-public class TopKFrequent {
+public class TopKFrequentPQ {
 	public static List<Integer> topKFrequent(int[] nums, int k) {
 		// count the frequency for each element
 		Map<Integer, Integer> map = new HashMap<>();
